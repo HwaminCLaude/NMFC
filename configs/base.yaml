@@ -1,0 +1,36 @@
+# 공통 하이퍼파라미터 (기본값)
+seed: 42
+
+nmfc:
+  lam: 0.5          # λ — 마진 분리 강도
+  n_ref: 64         # ReferenceBank 클래스당 샘플 수 (추론용)
+  detach_pi: false  # true면 준정적(quasi-static) 힘-장 절제 실험
+  # --- v3 variant 전용 키 (v1 코드는 읽지 않음 → 캐시 안전) ---
+  k1: 16            # v3 동일 클래스 kNN N_k (그리드 {8,16,32})
+  k2: 16            # v3 타 클래스 kNN M_k (마진 쌍)
+  m_quantile: 0.75  # 힌지 마진 앵커: t_c의 E⁻_{y_i} 분위수 (그리드 {0.5,0.75,0.9})
+  tau_min: 0.01     # τ = tau_min + softplus(ρ); ρ₀은 τ₀=1.0이 되게
+  bank_q: 64        # 온라인 뱅크 클래스당 용량 (assert ≥ k1+1)
+  n_coreset: 64     # 추론 코어셋 크기/클래스 (assert ≥ k1)
+
+acs:                # v3 새 블록 — variant.apt=="negJ"일 때만 읽힘 (v1 캐시 안전)
+  window: 5         # W — J 이동평균 창
+  patience: 5       # P — 정체 연속 에폭 수
+  delta: 1.0e-4     # δ — 상대 변화율 문턱
+  t_min: 10         # T_min — 최소 학습 에폭 (assert window+patience ≤ t_min)
+  t_max: 30         # T_max — 강제 전환 하드캡
+  ramp: 5           # R — 전환 후 선형 램프 길이
+  eps_phi: 1.0e-12  # 분모 가드 (J=0 붕괴 임베딩 대비)
+
+apt:
+  window: 5         # W — Fisher ratio 이동평균 창
+  delta: 1.0e-4     # δ — 상대 변화율 문턱
+  patience: 5       # 연속 만족 에폭 수
+  min_warmup: 5     # 사전학습 백본 조기 안정 대응 최소 워밍업
+  max_warmup: 30    # δ 미발동 폴백 하드캡
+  probe_size: 5000  # Fisher ratio 측정용 고정 train 부분집합 크기
+
+optim:
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  grad_clip: 5.0

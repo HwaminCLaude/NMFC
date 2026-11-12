@@ -1,0 +1,12 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "nmfc",
+  "top1": 0.6700000166893005,
+  "top5": 0.901199996471405,
+  "silhouette": 0.15475782752037048,
+  "transition_epoch": 5,
+  "epochs": 40,
+  "img_size": 224,
+  "name": "cifar100_nmfc"
+}

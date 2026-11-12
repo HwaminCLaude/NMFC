@@ -1,0 +1,25 @@
+# 224px 궤적 프로브 — NMFC Phase II가 제대로 된(열화 없는) 사전학습 특징에서
+# 얼마나 빨리 배우는지 + triplet 정규화 수정 확인 + 에폭당 소요시간 측정
+base: base.yaml
+runner: image
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  epochs: 5
+  embed_dim: 128
+  batch_p: 32        # 224px에서 배치 256은 16GB VRAM을 넘겨 sysmem fallback으로
+  batch_k: 6         # 100배 느려진다 → 192(32×6)로 축소
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+
+experiments:
+  - {name: diag224_nmfc_nowarmup, method: nmfc, apt_mode: none}
+  - {name: diag224_softmax,       method: softmax, epochs: 3}
+  - {name: diag224_triplet,       method: triplet, epochs: 3}
+  # 2차: NMFC 학습 신호 강화 시도 — 배치 내 클래스 수 증가 / lr 완화
+  - {name: diag224_nmfc_p48k4,    method: nmfc, apt_mode: none, batch_p: 48, batch_k: 4}
+  - {name: diag224_nmfc_lr3e4,    method: nmfc, apt_mode: none, optim: {lr: 3.0e-4}}
+  # 3차: 두 개선 결합
+  - {name: diag224_nmfc_combo,    method: nmfc, apt_mode: none, batch_p: 48, batch_k: 4, optim: {lr: 3.0e-4}}

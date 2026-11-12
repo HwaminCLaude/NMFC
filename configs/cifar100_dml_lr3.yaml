@@ -1,0 +1,25 @@
+# 비교군을 제안법 레시피(lr 3e-4, PK 48×4)로 재학습
+# 기존 캐시(lr 1e-3·PK 32×6)와 함께 각 방법의 best-of-recipe를 보고해 레시피 비대칭을 해소.
+# proxyanchor_plr = 공식 구현의 프록시 lr ×100 재현. src/ 변경은 proxy_lr_mult 게이트뿐.
+base: base.yaml
+runner: image
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 48        # 제안법(shrb)과 동일 PK 구성
+  batch_k: 4
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}   # 제안법과 동일 lr
+  apt: {delta: 1.0e-3, max_warmup: 20}
+
+experiments:
+  - {name: cifar100_arcface_lr3, method: arcface, s: 30.0, margin: 0.2}
+  - {name: cifar100_normsoftmax_lr3, method: normsoftmax}
+  - {name: cifar100_ms_lr3, method: ms}
+  - {name: cifar100_proxyanchor_lr3, method: proxyanchor}
+  - {name: cifar100_proxyanchor_plr, method: proxyanchor, proxy_lr_mult: 100.0}

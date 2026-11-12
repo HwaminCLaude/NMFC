@@ -1,0 +1,12 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "softmax",
+  "top1": 0.8514999747276306,
+  "top5": 0.9735000133514404,
+  "silhouette": 0.24600544571876526,
+  "transition_epoch": null,
+  "epochs": 40,
+  "img_size": 224,
+  "name": "cifar100_softmax_lr3"
+}

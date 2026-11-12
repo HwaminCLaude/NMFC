@@ -1,0 +1,22 @@
+{
+  "runner": "ood",
+  "dataset": "cifar10",
+  "method": "nmfc",
+  "top1": 0.9228000044822693,
+  "top5": 0.9952999949455261,
+  "silhouette": 0.27095621824264526,
+  "transition_epoch": 20,
+  "epochs": 40,
+  "img_size": 224,
+  "variant": {
+    "energy": "softmin",
+    "logit": "hinge_temp",
+    "apt": "negJ",
+    "bank": "online"
+  },
+  "variant_code": "shjo",
+  "ood_dataset": "svhn",
+  "ood_auc": 0.4879331899200984,
+  "ood_score": "E_total",
+  "name": "ood10v_shjo"
+}

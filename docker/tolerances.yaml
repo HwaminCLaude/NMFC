@@ -1,0 +1,250 @@
+# docker/tolerances.yaml — nmfc regen(재생성)·nmfc compare(재학습) 판정 규칙
+# 읽는 쪽: docker/nmfc_compare.py (load_yaml → regen_compare / regen_label / retrain_compare)
+#
+# ─────────────────────────────────────────────────────────────── 규칙 DSL 문법
+# 숫자: 지수 표기는 반드시 점을 넣는다(1.0e-5). PyYAML(YAML 1.1)은 '1e-5'를 문자열로 읽는다.
+#       (load_yaml이 '1e-5'·'1.0e5' 꼴 문자열을 float로 바꿔 주지만, 파일에서는 점 표기를 쓴다.)
+#
+# reference_device: {device, gpu_name, capability, torch, cudnn}
+#     device_info()의 같은 키와 모두 같아야 reference 장치(mode 'ref')다. capability는 정수 튜플로 비교한다.
+#
+# json:                                 # regen JSON 파일별 경로 규칙
+#   <저장소 상대 POSIX 경로>:
+#     rows_key: exp                     # (선택, 기본 exp) 리스트 원소가 모두 dict이고 이 키 값이 양쪽에서 유일하면
+#                                       #   원소를 그 값으로 짝짓는다. 경로 성분이 행 이름이 된다(예: c100v_shrb/mAP).
+#                                       #   목록(예: [exp, variant])이면 값들을 ':'로 이은 복합 키로 짝짓는다
+#                                       #   (예: rows/c100v_shrb:raw/ece). 한쪽에만 있는 행은 경로 누락·추가(FAIL).
+#                                       #   그 밖의 리스트는 인덱스(0,1,…)로 짝짓는다.
+#     optional: true                    # (선택) 파일이 없으면 FAIL 대신 N/A(ckpt 평가기 산출물).
+#     rules:                            # 위에서부터 '처음 일치하는 규칙 하나'만 적용한다. 일치가 없으면 exact.
+#       - path: <glob>                  # '/'로 이은 경로. '*' = 성분 하나 안의 임의 문자열('/' 제외),
+#                                       #   '**' = 성분 0개 이상. 성분은 fnmatchcase(대소문자 구분)로 비교한다.
+#         ref:   <check>                # reference 장치에서의 판정
+#         other: <check>                # 그 밖의 장치에서의 판정
+#         all:   <check>                # ref·other 둘 다(ref/other 대신)
+#   <check> :=
+#       exact                           # 값이 정확히 같아야 함
+#     | report                          # 보고만(게이트 아님, PASS_EXACT도 막지 않음)
+#     | {abs: <float>}                  # |Δ| ≤ abs면 PASS(비동일이면 PASS_EXACT는 못 받음), 넘으면 FAIL
+#     | {abs: <float>, on_diff: warn}   # 허용오차 안이어도 값이 다르면 WARN
+#     | {quantum: {episodes: E, queries: Q}, quanta: k, on_diff: warn}
+#                                       # 허용오차 = k / (E·Q). few-shot 평균 정확도의 1 양자
+#     | {report: true, abs: <float>}    # 보고만, 단 abs 이내 여부를 data.within_tol에 기록
+#     | {report: true, blocks_exact: true}
+#                                       # 보고만(FAIL 아님). 단 값이 다르면 PASS_EXACT를 막는다(→ PASS_TOLERANCE).
+#                                       #   PASS_EXACT는 purity·nmi를 뺀 모든 리프가 같아야 한다.
+# 공통 규칙(코드에 고정): 양쪽 경로 집합이 같아야 한다(누락·추가 = FAIL). bool·int·str·null·형 불일치는
+#   어떤 규칙이든 정확 일치를 요구한다. 허용오차는 양쪽이 float인 리프에만 적용한다.
+#   경계 잡음 방지를 위해 |Δ| ≤ tol·(1+1e-9)로 비교한다.
+#
+# files:                                # regen 비JSON 산출물
+#   - {path: <경로>, class: csv_cells}  # utf-8-sig 해독 + CRLF→LF 정규화 뒤 셀 단위 정확 비교
+#   - {glob: <glob>, class: font_dependent | pixel_equal | exact}
+#     선택 키: optional: true           # 한쪽에 파일이 없으면 FAIL 대신 N/A(ckpt 산출물)
+#              on_diff: report          # (class exact) 다르면 FAIL 대신 REPORT, 단 PASS_EXACT는 막는다
+#
+# retrain:                              # nmfc compare(재학습) 판정 — 키 설명은 아래 절 주석 참조
+# ───────────────────────────────────────────────────────────────────────────────
+
+version: 1
+
+reference_device:
+  device: cuda
+  gpu_name: "NVIDIA GeForce RTX 5080"
+  capability: [12, 0]
+  torch: "2.11.0+cu128"
+  cudnn: 91900
+
+json:
+  results/retrieval_eval.json:          # 17행 리스트, 행 키 = exp
+    rows_key: exp
+    rules:
+      - {path: "*/purity",   ref: report, other: {report: true, abs: 1.0e-3}}   # KMeans: 게이트 아님
+      - {path: "*/nmi",      ref: report, other: {report: true, abs: 1.0e-3}}
+      - {path: "*/recall@*", ref: exact,  other: {abs: 5.0e-4}}   # CPU 실측 ≤ 2e-4(질의 1~2개)
+      - {path: "*/mAP",      ref: exact,  other: {abs: 1.0e-5}}   # CPU 실측 ≤ 1.93e-6
+      - {path: "**",         all: exact}
+
+  results/stats_ci.json:
+    rules:
+      - {path: "map_delta_vs_shrb/*/significant", all: exact}
+      - {path: "map_bootstrap/**",       ref: exact, other: {abs: 1.0e-5}}  # CPU 실측 ≤ 2.44e-6
+      - {path: "map_delta_vs_shrb/**",   ref: exact, other: {abs: 1.0e-5}}
+      # positive_episodes·n_episodes·exceeds_band는 깊이 3(fewshot_k1_paired_delta/<exp>/…)이라 '**/'로 쓴다.
+      - {path: "**/positive_episodes",   all: exact}
+      - {path: "**/n_episodes",          all: exact}
+      - {path: "**/exceeds_band",        all: exact}
+      - {path: "verification_*/**",      ref: exact, other: {abs: 1.0e-6, on_diff: warn}}
+      # 1 양자 = 1/(20 에피소드 × 9,900 질의) = 1/198000. 근거: fewshot_k1/*/mean × 198000이 모두 정수다.
+      - {path: "fewshot_k1*/**",         ref: exact, other: {quantum: {episodes: 20, queries: 9900}, quanta: 1, on_diff: warn}}
+      - {path: "**",                     all: exact}
+
+  results/seed_robustness.json:
+    rules:
+      - {path: "**/n",               all: exact}
+      - {path: "**/n_pos",           all: exact}
+      - {path: "core/*/map/**",      ref: exact, other: {abs: 1.0e-5}}   # CPU 실측 ≤ 1.91e-6
+      - {path: "deltas/*/map/**",    ref: exact, other: {abs: 1.0e-5}}
+      - {path: "**/fewshot_s1/**",   ref: exact, other: {quantum: {episodes: 20, queries: 9900}, quanta: 1, on_diff: warn}}
+      - {path: "**/verif_auc/**",    ref: exact, other: {abs: 1.0e-6, on_diff: warn}}
+      - {path: "**",                 all: exact}
+
+  results/fewshot_verify_eval.json:
+    rules:
+      - {path: "**", all: exact}
+
+  results/openset_noise_grid/master.json:   # rows는 exp로 짝짓는다
+    rows_key: exp
+    rules:
+      - {path: "**", all: exact}
+
+  # ckpt가 있어야 다시 만들어지는 산출물(같은 GPU에서 비트 단위로 같게 나오는지는 측정하지 않았다).
+  # 그래서 다르면 FAIL로 하지 않고 보고한다. 단 PASS_EXACT는 '모든 리프 동일'이어야 하므로 다르면 막는다(blocks_exact).
+  # ckpt가 없는 실행(호스트·compose의 regen)에서는 평가기가 돌지 않아 파일이 커밋본 그대로다 → 동일, 영향 없음.
+  results/near_ood.json:
+    optional: true
+    rules:
+      - {path: "**", all: {report: true, blocks_exact: true}}
+  results/calibration_eval.json:        # rows는 (exp, variant)로 짝짓는다. reliability는 런 이름을 키로 한 dict
+    optional: true
+    rows_key: [exp, variant]
+    rules:
+      - {path: "**", all: {report: true, blocks_exact: true}}
+  results/c100v_softmax_open_bank/metrics.json:     # S1 eval_softmax_bank(ckpt)
+    optional: true
+    rules:
+      - {path: "**", all: {report: true, blocks_exact: true}}
+  results/c100v_shrb_open_bank/metrics.json:
+    optional: true
+    rules:
+      - {path: "**", all: {report: true, blocks_exact: true}}
+  results/openset_detection/config_used.json:       # S3 eval_openset_detection(ckpt). 상대 경로·설정만(시각 없음)
+    optional: true
+    rules:
+      - {path: "**", all: {report: true, blocks_exact: true}}
+
+files:
+  - {path: results/openset_noise_grid/master.csv, class: csv_cells}
+  - {glob: "results/openset_noise_grid/*.png", class: font_dependent}
+  # eval_openset_detection(ckpt) 산출물: 표는 보고하되 다르면 PASS_EXACT를 막는다.
+  # 그 폴더의 histogram_*.png·scores_*.npz는 기준본 스냅샷(results의 json·md·csv만)에 없어 비교할 수 없으므로
+  # 넣지 않는다(AUROC 값은 auroc_table.md, 설정은 config_used.json으로 본다).
+  - {path: results/openset_detection/auroc_table.md, class: exact, optional: true, on_diff: report}
+
+# ─────────────────────────────────────────────────────────────── 재학습(nmfc compare)
+retrain:
+  alpha: 0.05                 # 가족 단위 유의수준(Bonferroni)
+  fail_on_unevaluated: true   # 미평가 지표가 하나라도 있으면 합격하지 않는다(exit 2)
+  require_volume_in_container: true
+  mtime_slack_s: 1.0          # metrics.json mtime ≥ 실행 시작 − slack
+  single_run:
+    df: 4                     # |Δ| ≤ t(1−α/(2·m_run), df)·√2·s. m_run = 가족의 게이트 지표 수(core 5 → ≈6.51·s)
+  report_sd_multiple: 4.2     # 런별 4.2·SD 초과 여부는 보고만
+  single_seed:
+    report_abs: 0.02          # 분산을 모르는 단일 시드 실험: |Δ| > 0.02 여부를 보고만
+    extra_sources:            # 가족 밖 런에서 metrics.json 말고도 보고할 출처(집계 신선도 검사 적용)
+      - {name: mAP,        source: results/retrieval_eval.json, path: "{exp}/mAP"}
+      - {name: "recall@1", source: results/retrieval_eval.json, path: "{exp}/recall@1"}
+
+  synthetic:                  # 합성 런: 지표별 절대 허용오차(게이트)
+    runner: synthetic
+    prefix: syn_
+    metrics: {test_top1: 0.01, silhouette: 0.02}
+
+  # 가족: 시드 축이 있는 실험 묶음. kind seeded = SD 기반 게이트, single_seed = 보고만.
+  #   roles: {역할: 시드42 실험명}. 시드 s≠base_seed의 실험명 = 실험명 + seed_suffix.format(seed=s)
+  #   metrics: {지표: {source: metrics, key: <metrics.json 점 경로>} | {source: <JSON 파일>, path: <경로 템플릿>}}
+  #            경로 템플릿 자리표시: {exp} {role} {seed}. SD는 기준본의 시드 값들로 계산한 표본 SD(ddof=1).
+  #   n: 평균 게이트의 시드 수, m: 평균 게이트의 Bonferroni 검정 수.
+  #   (매핑 근거: scripts/eval_seed_robustness.py의 SEEDS·CORE·OOD·DML, configs/*seeds*.yaml)
+  families:
+    core:                     # CIFAR-100 임베딩 지표(seed_robustness.json core/<role>)
+      kind: seeded
+      seeds: [42, 0, 1, 2, 3]
+      base_seed: 42
+      seed_suffix: "_s{seed}"
+      roles: {shrb: c100v_shrb, softmax: cifar100_softmax_lr3, mhrb: c100v_mhrb}
+      n: 5
+      m: 20                   # 평균 게이트 ≈ t(1−0.05/40, 4)·s·√(2/5) ≈ 4.27·s
+      metrics:
+        top1:       {source: metrics, key: top1}
+        silhouette: {source: metrics, key: silhouette}
+        map:        {source: results/seed_robustness.json, path: "core/{role}/map/by_seed/{seed}"}
+        fewshot_s1: {source: results/seed_robustness.json, path: "core/{role}/fewshot_s1/by_seed/{seed}"}
+        verif_auc:  {source: results/seed_robustness.json, path: "core/{role}/verif_auc/by_seed/{seed}"}
+    ood:                      # CIFAR-10→SVHN far-OOD(metrics.json), →CIFAR-100 near-OOD(near_ood.json, ckpt 필요)
+      kind: seeded
+      seeds: [42, 0, 1, 2, 3]
+      base_seed: 42
+      seed_suffix: "_s{seed}"
+      roles: {shrb: ood10v_shrb, mhrb: ood10v_mhrb, softmax: ood_cifar10_softmax_lr3}
+      n: 5
+      m: 20                   # core와 같은 값
+      metrics:
+        ood_auc:  {source: metrics, key: ood_auc}
+        near_auc: {source: results/near_ood.json, path: "{exp}/near_auc"}
+    grid:                     # 개방셋 라벨 오염 그리드: 셀(method/scope/rate)마다 4시드
+      kind: seeded
+      cells_from: {file: results/openset_noise_grid/master.json, rows: rows, cell: [method, scope, rate], seed: seed, exp: exp}
+      n: 4
+      m: 36                   # 18셀 × 2지표. 평균 게이트 ≈ t(1−0.05/72, 3)·s·√(2/4) ≈ 8.18·s
+      metrics:
+        open_ood_auc:     {source: metrics, key: open_ood_auc}
+        closed_seen_top1: {source: metrics, key: closed_seen_top1}
+    dml:                      # DML 4종(시드 42만): 분산 미상 → 보고만
+      kind: single_seed
+      seeds: [42]
+      base_seed: 42
+      roles: {arcface: cifar100_arcface_lr3, normsoftmax: cifar100_normsoftmax_lr3, ms: cifar100_ms_lr3, proxyanchor: cifar100_proxyanchor_plr}
+      metrics:
+        map:        {source: results/seed_robustness.json, path: "core/{role}/map/by_seed/{seed}"}
+        fewshot_s1: {source: results/seed_robustness.json, path: "core/{role}/fewshot_s1/by_seed/{seed}"}
+        verif_auc:  {source: results/seed_robustness.json, path: "core/{role}/verif_auc/by_seed/{seed}"}
+
+  # 부호 게이트: 아래 gate 목록의 지표에 '부호 유지(5/5)'를 요구한다. 목록 지표의 기준본 |mean|/SD_delta는
+  # 모두 3 이상이다(ratio_min 미만이면 WARN 보고).
+  # (기준본 비율: shrb−softmax map 8.56·fewshot_s1 7.05·silhouette 12.97, shrb−mhrb map 6.21·silhouette 9.75)
+  sign_gate:
+    family: core
+    ratio_min: 3.0
+    gate:
+      - {a: shrb, b: softmax, metrics: [map, fewshot_s1, silhouette]}
+      - {a: shrb, b: mhrb,    metrics: [map, silhouette]}
+    report:                   # top1·verif·OOD 부호 개수는 보고만
+      - {a: shrb, b: softmax, metrics: [top1, verif_auc]}
+      - {a: shrb, b: mhrb,    metrics: [top1, fewshot_s1, verif_auc]}
+      - {family: ood, a: shrb, b: mhrb,    metrics: [ood_auc, near_auc]}
+      - {family: ood, a: shrb, b: softmax, metrics: [ood_auc, near_auc]}
+
+  # 런별 정확 일치(기준본 metrics.json 값과 비교, 상수 하드코딩 없음). 기준본에 키가 있는 런에만 적용.
+  exact_keys:
+    - label_noise_stats.n_flipped
+    - label_noise_stats.n_dropped_seen_to_novel
+    - label_noise_stats.n_contaminated_novel_to_seen
+    - label_noise_stats.n_mislabeled_in_train
+    - label_noise_stats.train_size
+    - n_seen
+    - split_seed
+    - seen_classes
+    - label_noise.seed
+
+  # transition_epoch: 기준본 variant.apt가 reciprocal이면 정확 일치(c100v·ood10v·c100s·개방셋의 shrb/mhrb 등),
+  # variant_code가 negJ·ACS 계열이면 보고만(transition_reason 함께). apt 정보가 없는 런은 보고만.
+  transition_epoch:
+    exact_apt: [reciprocal]
+    report_variant_codes: [shjb, shjo]
+
+  # 설정 동일성(보고 WARN, 게이트 아님): 기준본 metrics.json과 값이 다르면 WARN으로 보고한다.
+  config_keys: [runner, dataset, method, epochs, img_size, variant, variant_code, name,
+                label_noise.rate, label_noise.scope, ood_dataset]
+
+  # 예상 변경 허용 목록: 재학습 뒤 바뀌어도 보고만 하는 파일.
+  expected_changes:
+    - results/calibration_eval.json         # ckpt가 있으면 S3.calibration이 다시 씀(커밋본에 없는 cifar100_softmax_lr3 행 추가)
+    - results/operating_regime_audit.json   # warmup 블록 44줄 추가
+    - results/retrieval_eval.json           # ext npz가 있으면 eval_retrieval.py의 C_external_retrieval 행 추가
+    - results/ext_resnet50_frozen/metrics.json
+  # 런 폴더처럼 보이지만 평가기가 쓰는 산출물(학습하지 않은 런이어도 '예상 밖 변경'으로 보지 않는다).
+  aggregate_patterns:
+    - "results/*_bank/metrics.json"
+    - "results/ext_*/metrics.json"

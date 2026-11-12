@@ -1,0 +1,12 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "ms",
+  "top1": 0.8413000106811523,
+  "top5": 0.951200008392334,
+  "silhouette": 0.0890292227268219,
+  "transition_epoch": null,
+  "epochs": 40,
+  "img_size": 224,
+  "name": "cifar100_ms_lr3"
+}

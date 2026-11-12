@@ -1,0 +1,150 @@
+# NMFC 재현 — docker compose 서비스
+#
+# - 이미지는 이름으로만 참조한다(build: 없음). 만드는 길은 docker/build.ps1·docker/build.sh 하나이고,
+#   배포본은 `docker load -i dist/nmfc-cpu.tar.gz`로 들인다. 레지스트리에서 받지 않는다(pull_policy: never).
+# - 서비스마다 entrypoint에 하위 명령을 고정했으므로 뒤에 붙인 인자는 그 명령의 옵션이 된다.
+#     docker compose run --rm verify
+#     docker compose run --rm fetch data --from /host-data
+#     docker compose run --rm train --stage T1 --force
+#   Git Bash에서는 경로 인자 변환을 막기 위해 앞에 MSYS_NO_PATHCONV=1을 붙인다.
+# - 프로젝트 이름을 고정한다. 한글 폴더명에서 이름이 비는 오류와 다른 폴더와의 볼륨 이름 충돌을 막는다.
+#   볼륨 실제 이름: nmfc-repro_nmfc-results 등.
+# - 이름 있는 볼륨은 비어 있을 때 한 번만 이미지 내용(uid 1000 소유)으로 채워진다. 이미지를 다시 빌드했거나
+#   train·reproduce→compare를 새로 시작할 때는 docker volume rm -f nmfc-repro_nmfc-results nmfc-repro_nmfc-logs nmfc-repro_nmfc-runs
+# - 리눅스 호스트에서는 먼저 mkdir -p out && chmod a+rwx out (컨테이너는 uid 1000으로 쓴다).
+
+name: nmfc-repro
+
+x-gpu: &gpu
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+
+services:
+  # ------------------------------------------------------------------ nmfc:cpu (네트워크 차단)
+  verify:
+    image: nmfc:cpu
+    pull_policy: never
+    network_mode: none
+    entrypoint: ["nmfc", "verify"]
+    volumes:
+      - ./out:/out
+
+  regen-cpu:
+    image: nmfc:cpu
+    pull_policy: never
+    network_mode: none
+    entrypoint: ["nmfc", "regen"]
+    command: ["--device", "cpu"]
+    volumes:
+      - ./out:/out
+
+  # ------------------------------------------------------------------ nmfc:gpu
+  env:
+    <<: *gpu
+    image: nmfc:gpu
+    pull_policy: never
+    entrypoint: ["nmfc", "env"]
+    command: ["--require-gpu"]
+    volumes:
+      - ./out:/out
+
+  regen:
+    <<: *gpu
+    image: nmfc:gpu
+    pull_policy: never
+    shm_size: 8gb
+    entrypoint: ["nmfc", "regen"]
+    command: ["--device", "cuda"]
+    volumes:
+      - ./out:/out
+
+  smoke:
+    <<: *gpu
+    image: nmfc:gpu
+    pull_policy: never
+    shm_size: 8gb
+    entrypoint: ["nmfc", "smoke"]
+    command: ["--device", "cuda"]
+    volumes:
+      - ./out:/out
+      - nmfc-torch:/cache/torch
+
+  fetch:
+    image: nmfc:gpu
+    pull_policy: never
+    entrypoint: ["nmfc", "fetch"]
+    command: ["--help"]
+    volumes:
+      - nmfc-data:/workspace/nmfc/data
+      - nmfc-torch:/cache/torch
+      - ${NMFC_HOST_DATA:-./host-data}:/host-data:ro
+      - ./out:/out
+
+  train:
+    <<: *gpu
+    image: nmfc:gpu
+    pull_policy: never
+    shm_size: 8gb
+    entrypoint: ["nmfc", "train"]
+    command: ["--help"]
+    volumes: &train_volumes
+      - nmfc-data:/workspace/nmfc/data
+      - nmfc-ckpt:/workspace/nmfc/checkpoints
+      - nmfc-torch:/cache/torch
+      - nmfc-hf:/cache/hf
+      - nmfc-results:/workspace/nmfc/results
+      - nmfc-logs:/workspace/nmfc/logs
+      - nmfc-runs:/workspace/nmfc/runs
+      - ./out:/out
+
+  reproduce:
+    <<: *gpu
+    image: nmfc:gpu
+    pull_policy: never
+    shm_size: 8gb
+    entrypoint: ["nmfc", "reproduce"]
+    volumes: *train_volumes
+
+  compare:
+    image: nmfc:gpu
+    pull_policy: never
+    network_mode: none
+    entrypoint: ["nmfc", "compare"]
+    volumes:
+      - nmfc-results:/workspace/nmfc/results:ro
+      - nmfc-logs:/workspace/nmfc/logs:ro
+      - nmfc-runs:/workspace/nmfc/runs:ro
+      - ./out:/out
+
+  shell:
+    <<: *gpu
+    image: nmfc:gpu
+    pull_policy: never
+    shm_size: 8gb
+    entrypoint: ["bash"]
+    stdin_open: true
+    tty: true
+    volumes:
+      - nmfc-data:/workspace/nmfc/data
+      - nmfc-ckpt:/workspace/nmfc/checkpoints
+      - nmfc-torch:/cache/torch
+      - nmfc-hf:/cache/hf
+      - nmfc-results:/workspace/nmfc/results
+      - nmfc-logs:/workspace/nmfc/logs
+      - nmfc-runs:/workspace/nmfc/runs
+      - ${NMFC_HOST_DATA:-./host-data}:/host-data:ro
+      - ./out:/out
+
+volumes:
+  nmfc-data:
+  nmfc-ckpt:
+  nmfc-torch:
+  nmfc-hf:
+  nmfc-results:
+  nmfc-logs:
+  nmfc-runs:

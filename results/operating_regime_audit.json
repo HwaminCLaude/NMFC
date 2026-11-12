@@ -1,0 +1,105 @@
+{
+ "config": {
+  "exp": "c100v_shrb",
+  "k1": 3,
+  "k2": 32,
+  "lam": 0.5,
+  "sigma2": 26.659608840942383,
+  "tau": 1.0434094667434692,
+  "hinge_m": -12.122461318969727,
+  "n_test": 10000,
+  "n_bank": 6400,
+  "refs_per_class": 64,
+  "sigma2_ln_k1": 29.288573883744284
+ },
+ "regime": {
+  "t_true_class": {
+   "p5": 0.081508,
+   "p50": 0.14657,
+   "p95": 0.401724,
+   "mean": 0.180156
+  },
+  "rel_err_neighborhood_mean_at_operating_sigma": {
+   "p5": 2.2e-05,
+   "p50": 0.000546,
+   "p95": 0.0055,
+   "mean": 0.001363
+  },
+  "interp_position_true_class": {
+   "p5": 0.984014,
+   "p50": 0.994549,
+   "p95": 0.998907,
+   "mean": 0.993316
+  },
+  "interp_position_all_classes": {
+   "p5": 0.969369,
+   "p50": 0.989311,
+   "p95": 0.99771,
+   "mean": 0.987195
+  }
+ },
+ "decision": {
+  "n": 10000,
+  "top1_argmin_Epos": 0.8452,
+  "top1_neighborhood_mean_rule": 0.8451,
+  "top1_nearest_neighbor_rule": 0.8371,
+  "agree_Epos_vs_mean_rule": 0.9999,
+  "agree_Epos_vs_nn_rule": 0.9629,
+  "mean_rule_differs_from_nn_rule": 0.0372
+ },
+ "hinge_and_competition": {
+  "top1_full_logit": 0.8448,
+  "top1_lambda0": 0.8452,
+  "delta_top1_from_competition": -0.0004,
+  "argmax_agreement_full_vs_lambda0": 0.9925,
+  "argmax_flips": 75,
+  "hinge_clamp_rate_frozen_m": 0.0,
+  "hinge_clamp_cells": 0,
+  "total_cells": 1000000,
+  "across_class_std_neg_Epos": {
+   "p5": 2.508388,
+   "p50": 3.267823,
+   "p95": 4.109294,
+   "mean": 3.28495
+  },
+  "across_class_std_lambda_hinge": {
+   "p5": 0.052692,
+   "p50": 0.364509,
+   "p95": 0.58008,
+   "mean": 0.334386
+  },
+  "logit_top1_top2_margin": {
+   "p5": 0.712634,
+   "p50": 9.346076,
+   "p95": 16.321528,
+   "mean": 8.846001
+  }
+ },
+ "checks": [
+  {
+   "name": "작동점이 이웃평균 레짐 (보간위치 중앙값 > 0.9)",
+   "ok": true,
+   "detail": "pos 중앙값=0.9945 (0=최근접, 1=이웃평균)"
+  },
+  {
+   "name": "작동 sigma^2에서 이웃평균 근사 상대오차 < 1%",
+   "ok": true,
+   "detail": "p95=5.50e-03"
+  },
+  {
+   "name": "argmax가 이웃평균 규칙과 일치 (> 최근접 규칙)",
+   "ok": true,
+   "detail": "이웃평균 일치=0.9999 vs 최근접 일치=0.9629, 두 규칙 불일치 칸=0.0372"
+  },
+  {
+   "name": "힌지 상한이 추론에서 한 번이라도 물리는가",
+   "ok": false,
+   "detail": "클램프 0/1000000 칸 = 0.00e+00  (0이면 min(E-,m)=E- 항등 → m 무효)"
+  },
+  {
+   "name": "경쟁항이 추론 Top-1을 올리는가",
+   "ok": false,
+   "detail": "전체 0.8448 vs lambda=0 0.8452  Δ=-0.0004, argmax 뒤집힘 75/10000"
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "이 저장소를 인용하실 때는 아래 논문을 인용해 주세요."
+title: "NMFC — Nonlinear Marginal Fisher Classification via Local Soft-Neighborhood Energy Logits (재현 저장소)"
+abstract: >-
+  NMFC 논문 실험의 실행 코드·설정, 실험 원자료(results/·logs/), Docker 재현 도구.
+  재학습 없이 CPU만으로 단위 테스트 97건과 명제 검증 16건을 실행할 수 있습니다.
+type: software
+authors:
+  - family-names: "Jung"
+    given-names: "Hwamin"
+    affiliation: "Department of Data Science, Graduate School, Hoseo University"
+    email: "wjdghkals@gmail.com"
+  - family-names: "Soriano Hernandez"
+    given-names: "Jorge Adan"
+    affiliation: "Department of Data Science, Graduate School, Hoseo University"
+    email: "adan_25@naver.com"
+license: MIT
+keywords:
+  - discriminative embedding
+  - marginal Fisher analysis
+  - soft-min energy
+  - neighborhood logits
+  - controlled comparison
+  - out-of-distribution detection
+preferred-citation:
+  type: article
+  title: "Nonlinear Marginal Fisher Classification via Local Soft-Neighborhood Energy Logits"
+  authors:
+    - family-names: "Jung"
+      given-names: "Hwamin"
+    - family-names: "Soriano Hernandez"
+      given-names: "Jorge Adan"
+  year: 2026

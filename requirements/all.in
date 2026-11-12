@@ -1,0 +1,5 @@
+-r core.in
+# 개발
+ruff
+# 외부 임베딩 (scripts/embed_external.py m_clip)
+open_clip_torch

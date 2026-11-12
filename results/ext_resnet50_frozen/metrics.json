@@ -1,0 +1,7 @@
+{
+  "method": "resnet50_frozen",
+  "source": "external",
+  "silhouette": -0.002842230722308159,
+  "top1": null,
+  "dim": 2048
+}

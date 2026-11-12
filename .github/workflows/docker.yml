@@ -1,0 +1,87 @@
+# NMFC Docker 재현 이미지 CI
+#
+# - push·pull_request: docker/build.sh cpu로 빌드한 뒤 네트워크를 끊고 nmfc verify를 돌린다.
+# - 이미지는 레지스트리에 올리지 않는다. 배포는 GitHub Release의 이미지 파일(docker save)로 한다.
+# - workflow_dispatch: gpu 이미지를 빌드한다. 호스티드 러너에는 GPU가 없으므로 빌드 중 자기검증
+#   (torch 2.11.0+cu128·CUDA 12.8·cuDNN 91900)과 CPU 경로인 verify만 확인한다.
+# 액션은 커밋 SHA로 고정한다(주석은 그 SHA의 태그).
+# build.sh·finalize.sh의 실행 비트에 기대지 않도록 bash로 부른다.
+
+name: docker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUTF8: "1"
+
+jobs:
+  cpu:
+    name: cpu 빌드 + verify
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: 호스트 도구 의존성(manifest --write-lock)
+        run: python -m pip install "pyyaml==6.0.3" "numpy==2.4.4"
+      - name: 빌드(docker/build.sh cpu)
+        run: PYTHON=python bash docker/build.sh cpu
+      - name: verify(네트워크 차단)
+        run: |
+          mkdir -p out
+          chmod a+rwx out
+          docker run --rm --network none -v "$PWD/out:/out" nmfc:cpu verify
+      - name: 보고서 업로드
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: nmfc-cpu-reports
+          path: out/
+          if-no-files-found: warn
+
+  gpu:
+    name: gpu 빌드(수동)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: 디스크 확보(cu128 휠 약 4GB)
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+      - name: 호스트 도구 의존성(manifest --write-lock)
+        run: python -m pip install "pyyaml==6.0.3" "numpy==2.4.4"
+      - name: 빌드(docker/build.sh gpu)
+        run: PYTHON=python bash docker/build.sh gpu
+      - name: verify(네트워크 차단, CPU 경로)
+        run: |
+          mkdir -p out
+          chmod a+rwx out
+          docker run --rm --network none -v "$PWD/out:/out" nmfc:gpu verify
+      - name: 보고서 업로드
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: nmfc-gpu-reports
+          path: out/
+          if-no-files-found: warn

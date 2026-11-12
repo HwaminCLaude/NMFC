@@ -1,0 +1,203 @@
+{
+  "plan": "plan13",
+  "task": "openset 80/20 near-OOD detection AUROC (재학습 0)",
+  "checkpoints": {
+    "nmfc": "checkpoints/c100v_shrb_open/ckpt.pt",
+    "ce": "checkpoints/c100v_softmax_open/ckpt.pt",
+    "nmfc_embeddings": "results/c100v_shrb_open/embeddings.npz",
+    "ce_embeddings": "results/c100v_softmax_open/embeddings.npz"
+  },
+  "split": {
+    "n_seen": 80,
+    "split_seed": 0,
+    "total": 100,
+    "seen_classes": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      9,
+      11,
+      14,
+      16,
+      17,
+      20,
+      21,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      39,
+      40,
+      41,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      50,
+      52,
+      53,
+      54,
+      56,
+      57,
+      58,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      67,
+      68,
+      69,
+      70,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      80,
+      81,
+      82,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99
+    ],
+    "n_id_test": 8000,
+    "n_ood_test": 2000
+  },
+  "nmfc_hparams": {
+    "k1": 3,
+    "k2": 32,
+    "lam": 0.5,
+    "tau_min": 0.01,
+    "m_quantile": 0.75,
+    "n_coreset": 64,
+    "energy": "softmin",
+    "logit": "hinge_temp",
+    "bank_tau_frozen": 1.0353902578353882,
+    "bank_m_frozen": -0.49870961904525757
+  },
+  "sigma2": {
+    "frozen_train": 26.7047176361084,
+    "reestimated_id_test": 25.839963912963867,
+    "primary_for_table": "reestimated_id_test",
+    "note": "σ² 재추정 질의는 ID(seen)-test만; OOD·뱅크 미접촉. τ·m 동결이라 σ² 변화는 s_msp에 주로 영향."
+  },
+  "bootstrap": {
+    "n_boot": 200,
+    "seed": 7,
+    "ci": "percentile [2.5,97.5]",
+    "equiv_band": 0.015
+  },
+  "gate": {
+    "nmfc_frozen_target": 0.8301205625,
+    "nmfc_frozen_measured": 0.8301366874999999,
+    "ce_msp100_target": 0.8049388125,
+    "ce_msp100_measured": 0.8050065937499999,
+    "passed": true
+  },
+  "auroc": {
+    "s": 0.83013709375,
+    "s_gap": 0.782890375,
+    "s_msp": 0.80358975,
+    "s_frozen": 0.8301366874999999,
+    "ce_msp": 0.8051064375,
+    "ce_msp_100": 0.8050065937499999,
+    "ce_energy": 0.8153629374999999,
+    "ce_energy_100": 0.81536284375
+  },
+  "paired_delta": {
+    "s__vs__ce_msp": {
+      "delta": 0.025030656250000005,
+      "ci95": [
+        0.016090270296551405,
+        0.032723555750459855
+      ],
+      "exceeds_band": true,
+      "verdict": "우위"
+    },
+    "s__vs__ce_energy": {
+      "delta": 0.014774156250000114,
+      "ci95": [
+        0.005802319412096052,
+        0.024518360560627242
+      ],
+      "exceeds_band": false,
+      "verdict": "동급(±0.015)"
+    },
+    "s__vs__ce_msp_100": {
+      "delta": 0.025130500000000056,
+      "ci95": [
+        0.01609114008131354,
+        0.03281974689214738
+      ],
+      "exceeds_band": true,
+      "verdict": "우위"
+    },
+    "s_gap__vs__ce_msp": {
+      "delta": -0.022216062499999967,
+      "ci95": [
+        -0.0312929824137454,
+        -0.01348886652111951
+      ],
+      "exceeds_band": true,
+      "verdict": "열위"
+    },
+    "s_msp__vs__ce_msp": {
+      "delta": -0.0015166875000000024,
+      "ci95": [
+        -0.010501733045097794,
+        0.007350405178086079
+      ],
+      "exceeds_band": false,
+      "verdict": "동급(±0.015)"
+    },
+    "s_frozen__vs__ce_msp": {
+      "delta": 0.02503024999999992,
+      "ci95": [
+        0.016090103914955904,
+        0.032723667439072665
+      ],
+      "exceeds_band": true,
+      "verdict": "우위"
+    }
+  },
+  "far_ood_reference": {
+    "nmfc_ood10v_shrb": 0.9699,
+    "ce_ood_cifar10_softmax_lr3": 0.9772,
+    "drop_nmfc_frozen": 0.13976331250000007,
+    "drop_ce_msp": 0.17209356249999996
+  },
+  "seed": 42
+}

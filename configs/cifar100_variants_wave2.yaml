@@ -1,0 +1,26 @@
+# CIFAR-100 v3 변형 웨이브 2 — bank×ACS 상호작용의 빠진 코너
+# c100v_shro = softmin+hinge+reciprocal+online. 웨이브 1의 shrb(minibatch,reciprocal)·shjb(minibatch,negJ)·
+# shjo(online,negJ)와 합쳐 {minibatch,online}×{reciprocal,negJ} 2×2를 완성한다:
+#   shrb→shro = 순수 온라인 뱅크 효과(apt 고정), shro→shjo = 온라인 하에서 순수 negJ 효과(bank 고정).
+# 기존 cifar100_variants.yaml/캐시는 불변. defaults는 cifar100_variants.yaml 값을 복제 재기술.
+base: base.yaml
+runner: image
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 48        # v1 nmfc 튜닝 그대로 (PK 48×4=192; online Phase I 전용 PK)
+  batch_k: 4
+  batch_size: 192    # online Phase II shuffle 표준 배치
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}
+  apt: {delta: 1.0e-3, max_warmup: 5}   # reciprocal 전환을 웨이브 1(shrb/shjb 근사)·v1과 정렬
+  acs: {delta: 1.0e-3, t_min: 4, t_max: 8, ramp: 3, window: 2, patience: 2}  # shro는 안 읽지만 base 정렬용
+
+experiments:
+  - {name: c100v_shro, method: nmfc,
+     variant: {energy: softmin, logit: hinge_temp, apt: reciprocal, bank: online},
+     nmfc: {k1: 16, k2: 16}}  # 온라인 뱅크 → 완전 k1 (shjo와 동일, apt만 reciprocal)

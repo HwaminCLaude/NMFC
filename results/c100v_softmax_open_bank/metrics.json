@@ -1,0 +1,10 @@
+{
+  "runner": "openset_bank_eval",
+  "source_encoder": "c100v_softmax_open",
+  "n_seen": 80,
+  "split_seed": 0,
+  "open_top1_all": 0.7063,
+  "open_top1_seen": 0.855,
+  "open_top1_novel": 0.1115,
+  "predict": "argmin_E_pos (bank, no hinge)"
+}

@@ -1,0 +1,12 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "nmfc",
+  "top1": 0.3727000057697296,
+  "top5": 0.7735999822616577,
+  "silhouette": -0.08216387033462524,
+  "transition_epoch": 0,
+  "epochs": 5,
+  "img_size": 224,
+  "name": "diag224_nmfc_p48k4"
+}

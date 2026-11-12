@@ -1,0 +1,29 @@
+# CIFAR-100 softmax CE — 제안법 레시피(lr 3e-4)로 정렬 재학습
+#
+# 배경: 이전 점검에서 "동일 옵티마이저·손실만 변수"가 사실과 다름이 지적됐다.
+# lr3 스윕(cifar100_dml_lr3.yaml)은 arcface·normsoftmax·ms·proxyanchor만 다루고 **softmax는 빠져 있어**,
+# 주 대조(shrb 0.8448 vs softmax 0.8372, +0.0076)의 교란이 남아 있다.
+# 이 config는 그 공백을 메운다 — softmax를 제안법과 동일한 lr 3e-4로 재학습해
+# **best-of-recipe**(기존 lr 1e-3 캐시 0.8372 vs 신규 3e-4)를 softmax의 성능으로 보고한다.
+#
+# 잔여 비대칭(정직 표기): softmax는 PK_METHODS가 아니므로 셔플 배치 192를 유지한다
+# (제안법은 PK 48×4). 배치 구성까지 정렬하려면 train.py 게이트가 필요 — 별도 결정 사항.
+#
+# 나머지 defaults는 cifar100_variants.yaml(제안법 c100v_shrb)과 동일하게 복제.
+base: base.yaml
+runner: image
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 48        # softmax에는 미적용(셔플) — 제안법과의 대조를 위해 값만 기록
+  batch_k: 4
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}   # ← 유일한 변경: 제안법과 정렬 (base.yaml 기본 1e-3 대비)
+
+experiments:
+  - {name: cifar100_softmax_lr3, method: softmax}

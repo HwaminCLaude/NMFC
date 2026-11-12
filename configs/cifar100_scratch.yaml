@@ -1,0 +1,25 @@
+# CIFAR-100 from-scratch(랜덤 초기화) 폐집합 비교 — 트랙 A
+# ResNet-50 가중치를 랜덤 초기화(pretrained=false)하고 shrb vs softmax 비교.
+# 기존 224px 실험과 '사전학습 유무' 1변수만 다름. 기존 cifar100*.yaml/캐시 불변(pretrained 기본 true).
+base: base.yaml
+runner: image
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  pretrained: false     # 핵심: ImageNet 가중치 대신 랜덤 초기화
+  epochs: 200           # from-scratch 수렴 예산 (사전학습 40 → 200)
+  embed_dim: 128
+  batch_p: 48
+  batch_k: 4
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}
+  # from-scratch는 Phase I(선형 MFA)이 밑바닥 임베딩 기하를 실제로 형성 → 워밍업 여유 확보
+  apt: {delta: 1.0e-3, min_warmup: 5, max_warmup: 20}
+
+experiments:
+  - {name: c100s_shrb, method: nmfc, variant: {energy: softmin, logit: hinge_temp},
+     nmfc: {k1: 3, k2: 32}}
+  - {name: c100s_softmax, method: softmax}

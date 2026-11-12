@@ -1,0 +1,19 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "nmfc",
+  "top1": 0.8399999737739563,
+  "top5": 0.9688000082969666,
+  "silhouette": 0.2590497136116028,
+  "transition_epoch": 5,
+  "epochs": 40,
+  "img_size": 224,
+  "variant": {
+    "energy": "mean",
+    "logit": "hinge_temp",
+    "apt": "reciprocal",
+    "bank": "minibatch"
+  },
+  "variant_code": "mhrb",
+  "name": "c100v_mhrb_s1"
+}

@@ -1,0 +1,33 @@
+# CIFAR-100 개방셋 + 대칭 라벨 노이즈 5% — 224px 본실험
+# 노이즈 실현은 학습 시드와 분리된 seed 0 고정 — 같은 scope의 shrb/softmax가 동일 실현 공유(공정).
+# 실험1(_ns5, scope=seen): 80/20 분할 후 seen 80만 flip(공간=seen) — train 40,000 불변, 오라벨 2,000.
+# 실험2(_na5, scope=all): 100클래스 전체 flip(공간=100) 후 80/20 적용 — seen→novel ~404 드롭,
+#   novel→seen ~404 유입(open-set noise). test 라벨은 절대 불변.
+# 클린 대조군은 캐시된 c100v_shrb_open(AUC 0.830)/c100v_softmax_open(0.805) — 재실행 안 함.
+# label_noise는 spec 병합이 얕은 병합이라 defaults에 두지 않는다(실험별 완전 블록).
+base: base.yaml
+runner: openset
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 48
+  batch_k: 4
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}
+  apt: {delta: 1.0e-3, max_warmup: 5}
+  open_set: {n_seen: 80, split_seed: 0}
+
+experiments:
+  - {name: c100v_shrb_open_ns5, method: nmfc, variant: {energy: softmin, logit: hinge_temp},
+     nmfc: {k1: 3, k2: 32}, label_noise: {rate: 0.05, seed: 0, scope: seen}}
+  - {name: c100v_softmax_open_ns5, method: softmax,
+     label_noise: {rate: 0.05, seed: 0, scope: seen}}
+  - {name: c100v_shrb_open_na5, method: nmfc, variant: {energy: softmin, logit: hinge_temp},
+     nmfc: {k1: 3, k2: 32}, label_noise: {rate: 0.05, seed: 0, scope: all}}
+  - {name: c100v_softmax_open_na5, method: softmax,
+     label_noise: {rate: 0.05, seed: 0, scope: all}}

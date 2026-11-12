@@ -1,0 +1,51 @@
+{
+  "data": [
+    {
+      "name": "cifar-100-python.tar.gz",
+      "dest": "data/raw/cifar-100-python.tar.gz",
+      "size": 169001437,
+      "sha256": "85cd44d02ba6437773c5bbd22e183051d648de2e7d6b014e1ef29b855ba677a7",
+      "md5": "eb9058c3a382ffc7106e4002c42a8d85",
+      "urls": [
+        "https://data.brainchip.com/dataset-mirror/cifar100/cifar-100-python.tar.gz",
+        "https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz"
+      ],
+      "extract": "tar.gz"
+    },
+    {
+      "name": "cifar-10-python.tar.gz",
+      "dest": "data/raw/cifar-10-python.tar.gz",
+      "size": 170498071,
+      "sha256": "6d958be074577803d12ecdefd02955f39262c83c16fe9348329d7fe0b5c001ce",
+      "md5": "c58f30108f718f92721af3b95e74349a",
+      "urls": [
+        "https://data.brainchip.com/dataset-mirror/cifar10/cifar-10-python.tar.gz",
+        "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
+      ],
+      "extract": "tar.gz"
+    },
+    {
+      "name": "test_32x32.mat",
+      "dest": "data/raw/test_32x32.mat",
+      "size": 64275384,
+      "sha256": "cdce80dfb2a2c4c6160906d0bd7c68ec5a99d7ca4831afa54f09182025b6a75b",
+      "md5": "eb5a983be6a315427106f1b164d9cef3",
+      "urls": [
+        "https://ufldl.stanford.edu/housenumbers/test_32x32.mat",
+        "http://ufldl.stanford.edu/housenumbers/test_32x32.mat"
+      ],
+      "extract": null
+    }
+  ],
+  "weights": [
+    {
+      "name": "resnet50-11ad3fa6.pth",
+      "dest": "$TORCH_HOME/hub/checkpoints/resnet50-11ad3fa6.pth",
+      "size": 102540417,
+      "sha256": "11ad3fa62ca79e40addfd354a8ec4b7c75143b3038b8d2a807fbc68deab379ca",
+      "urls": [
+        "https://download.pytorch.org/models/resnet50-11ad3fa6.pth"
+      ]
+    }
+  ]
+}

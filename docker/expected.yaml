@@ -1,0 +1,33 @@
+# docker/expected.yaml — nmfc verify의 기대값
+# 읽는 쪽: docker/nmfc_cli.py(cmd_verify, env 점검), docker/finalize.sh(빌드 중 한글 폰트 단언)
+#
+# verify.font_assert
+#   families를 순서대로 findfont(..., fallback_to_default=False)로 찾고, 실제 폰트 파일에
+#   char 글리프가 있어야 한다(FT2Font(path).get_char_index(ord(char)) > 0). 실패하면 FAIL.
+#
+# verify.steps — 이 순서대로 실행한다.
+#   cmd     sys.executable 뒤에 붙는 인자. 실행은 [sys.executable, "-B", *cmd], cwd=workdir.
+#   expect  {부분문자열: 최소 출현 횟수}. stdout과 stderr를 합친 출력에서 센다. exit 0도 필요하다.
+#   writes  단계가 다시 쓰는 추적 파일과 판정 class. 단계 전후로 mtime_ns가 바뀌어야 한다(신선도).
+#     exact           LF 정규화 sha256이 같아야 한다.
+#     pixel_equal     Pillow로 디코딩한 RGBA 배열이 완전히 같아야 한다(PNG 압축 바이트 차이는 허용).
+#     font_dependent  보고만 한다(픽셀 동일 여부와 차이 비율).
+#     float_platform  숫자 리프는 isclose(rel=1e-9, abs=1e-12). 문자열 리프는 정규식
+#                     [-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?로 뽑은 숫자를 같은 규칙으로, 나머지 텍스트는 정확히 비교한다.
+#                     checks[*].name, passed, n_passed, n_total은 정확히 같아야 한다.
+#   writes에 없는 파일이 바뀌거나 사라지거나 새로 생기면 FAIL이다
+#   (docker/context.lock이 있으면 그것과, 없으면 실행 직전 전체 해시 스냅샷과 대조).
+
+verify:
+  font_assert: {families: ["Malgun Gothic", "NanumGothic", "Noto Sans CJK KR"], char: "한"}
+  steps:
+    - name: pytest
+      cmd: ["-m", "pytest", "tests", "-q", "-p", "no:cacheprovider"]
+      expect: {"97 passed": 1}
+      writes: []
+
+    - name: audit_theory_claims
+      cmd: ["scripts/audit_theory_claims.py"]
+      expect: {"통과 16/16": 1, "R=5.756": 1, "tau=1.0434": 1, "sigma2=26.6596": 1, "m=-12.122": 1}
+      writes:
+        - {path: results/theory_audit.json, class: float_platform}

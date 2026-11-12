@@ -1,0 +1,25 @@
+# Tier1 — 시드 강건성: 핵심 3런 재현 (시드 2만 변경, 하이퍼 불변)
+# 원본: c100v_mhrb·c100v_shrb(cifar100_variants.yaml), cifar100_softmax_lr3(cifar100_softmax_lr3.yaml)
+# nmfc 두 런은 원 defaults의 apt(delta 1e-3, max_warmup 5)를 실험 레벨로 복제, softmax는 base apt 그대로.
+base: base.yaml
+runner: image
+seed: 2
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 48
+  batch_k: 4
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}
+
+experiments:
+  - {name: c100v_mhrb_s2, method: nmfc, variant: {logit: hinge_temp},
+     apt: {delta: 1.0e-3, max_warmup: 5}}
+  - {name: c100v_shrb_s2, method: nmfc, variant: {energy: softmin, logit: hinge_temp},
+     nmfc: {k1: 3, k2: 32}, apt: {delta: 1.0e-3, max_warmup: 5}}
+  - {name: cifar100_softmax_lr3_s2, method: softmax}

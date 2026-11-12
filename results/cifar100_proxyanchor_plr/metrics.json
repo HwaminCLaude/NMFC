@@ -1,0 +1,12 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "proxyanchor",
+  "top1": 0.8467000126838684,
+  "top5": 0.9513999819755554,
+  "silhouette": 0.08844847232103348,
+  "transition_epoch": null,
+  "epochs": 40,
+  "img_size": 224,
+  "name": "cifar100_proxyanchor_plr"
+}

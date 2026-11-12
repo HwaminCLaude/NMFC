@@ -1,0 +1,27 @@
+# Tier2 — 시드 강건성: OOD 3런 재현 (시드 2만 변경, 하이퍼 불변)
+# 원본: ood10v_mhrb·ood10v_shrb(ood_cifar10_variants.yaml), ood_cifar10_softmax_lr3(동명 yaml)
+# 두 원본 config의 defaults가 동일(PK 10×19, lr 3e-4, apt delta 1e-3/max_warmup 20)함을 확인 후 공유.
+base: base.yaml
+runner: ood
+seed: 2
+
+defaults:
+  dataset: cifar10
+  ood_dataset: svhn
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 10
+  batch_k: 19
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}
+  apt: {delta: 1.0e-3, max_warmup: 20}
+
+experiments:
+  - {name: ood10v_mhrb_s2, method: nmfc, variant: {logit: hinge_temp},
+     nmfc: {k1: 16, k2: 16}}
+  - {name: ood10v_shrb_s2, method: nmfc, variant: {energy: softmin, logit: hinge_temp},
+     nmfc: {k1: 16, k2: 16}}
+  - {name: ood_cifar10_softmax_lr3_s2, method: softmax}

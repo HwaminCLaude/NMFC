@@ -1,0 +1,27 @@
+# DML 베이스라인 from-scratch (사전학습 교란 제거)
+# ResNet-50 랜덤 초기화 + CIFAR-100 200ep. cifar100_scratch.yaml과 동일 프로토콜, 손실만 변수.
+# 대조 = 캐시된 c100s_shrb(검색 mAP 0.502)·c100s_softmax(0.402). src/ 불변(모든 손실 이미 배선).
+base: base.yaml
+runner: image
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  pretrained: false     # 랜덤 초기화
+  epochs: 200
+  embed_dim: 128
+  batch_p: 48
+  batch_k: 4
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}
+  apt: {delta: 1.0e-3, min_warmup: 5, max_warmup: 20}
+
+experiments:
+  - {name: c100s_arcface, method: arcface, s: 30.0, margin: 0.2}
+  - {name: c100s_normsoftmax, method: normsoftmax}
+  - {name: c100s_ms, method: ms}
+  - {name: c100s_proxyanchor, method: proxyanchor}
+  - {name: c100s_proto, method: proto}
+  - {name: c100s_deepmfa, method: deepmfa, beta: 0.1}

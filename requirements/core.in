@@ -1,0 +1,12 @@
+# 공통 런타임 (저장소 코드 import 근거)
+torch==2.11.0
+torchvision==0.26.0
+numpy
+pyyaml
+scikit-learn
+scipy
+matplotlib
+pandas
+pillow
+tqdm
+pytest

@@ -1,0 +1,33 @@
+# CIFAR-100 v3 모듈 변형(variant) 웨이브 1 — 224px 본실험
+# 기존 cifar100.yaml/캐시는 절대 불변. defaults는 cifar100.yaml 값을 복제 재기술.
+base: base.yaml
+runner: image
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 48        # v1 nmfc 튜닝 그대로 (PK 48×4=192)
+  batch_k: 4
+  batch_size: 192    # 온라인 뱅크(shuffle) 표준 배치
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}
+  # reciprocal(APT) 변형은 캐시된 v1(cifar100_nmfc, 전환 epoch 5)과 워밍업을 맞춰 델타가
+  # logit/energy 모듈 효과로 귀속되게 한다. 5k 프로브+SGD 노이즈에서 δ=1e-4 미발동 → max_warmup 5.
+  apt: {delta: 1.0e-3, max_warmup: 5}
+  # negJ(ACS) 변형: δ 완화, T_max=8로 Phase II 예산을 v1과 근사. W+P ≤ T_min 제약을
+  # 만족하도록 t_min=4(초안 값 3은 W+P=4를 위배 → 4로 보정), window=patience=2.
+  acs: {delta: 1.0e-3, t_min: 4, t_max: 8, ramp: 3, window: 2, patience: 2}
+
+experiments:
+  # v1 기준점(mmrb)은 캐시된 cifar100_nmfc를 그대로 씀 — 여기 재실행 안 함.
+  - {name: c100v_mhrb, method: nmfc, variant: {logit: hinge_temp}}
+  - {name: c100v_shrb, method: nmfc, variant: {energy: softmin, logit: hinge_temp},
+     nmfc: {k1: 3, k2: 32}}   # PK 48×4 LOO 상한: k1 ≤ batch_k−1 = 3
+  - {name: c100v_shjb, method: nmfc, variant: {energy: softmin, logit: hinge_temp, apt: negJ},
+     nmfc: {k1: 3, k2: 32}}
+  - {name: c100v_shjo, method: nmfc,
+     variant: {energy: softmin, logit: hinge_temp, apt: negJ, bank: online},
+     nmfc: {k1: 16, k2: 16}}  # 완전 v3 (온라인 뱅크 → 완전 k1)

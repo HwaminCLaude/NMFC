@@ -1,0 +1,12 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "proto",
+  "top1": 0.8382999897003174,
+  "top5": 0.9661999940872192,
+  "silhouette": 0.11482378095388412,
+  "transition_epoch": null,
+  "epochs": 40,
+  "img_size": 224,
+  "name": "cifar100_proto"
+}

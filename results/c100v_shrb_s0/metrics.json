@@ -1,0 +1,19 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "nmfc",
+  "top1": 0.8482000231742859,
+  "top5": 0.9699000120162964,
+  "silhouette": 0.29456213116645813,
+  "transition_epoch": 5,
+  "epochs": 40,
+  "img_size": 224,
+  "variant": {
+    "energy": "softmin",
+    "logit": "hinge_temp",
+    "apt": "reciprocal",
+    "bank": "minibatch"
+  },
+  "variant_code": "shrb",
+  "name": "c100v_shrb_s0"
+}

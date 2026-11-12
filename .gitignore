@@ -1,0 +1,28 @@
+# 가상환경·캐시
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# 재실행으로 생성되는 대용량 산출물 (저장소에는 포함하지 않음)
+data/
+checkpoints/
+results/ext_*/*
+!results/ext_resnet50_frozen/metrics.json
+logs/*.log
+
+# 로그·임시 출력
+*.log
+*.out
+
+# 주의: 이 저장소는 원본 프로젝트와 달리 results/·logs/의 소형 산출물
+# (metrics.json, history.json, 집계 json, 평가에 필요한 embeddings.npz)을 추적합니다 —
+# 재학습 없이 평가·집계·감사 스크립트를 다시 실행할 수 있게 하기 위함입니다.
+
+# Docker 재현 도구의 로컬 산출물
+dist/
+out/
+runs/
+_planning/
+host-data/

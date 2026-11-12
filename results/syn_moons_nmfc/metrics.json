@@ -1,0 +1,11 @@
+{
+  "runner": "synthetic",
+  "dataset": "moons",
+  "method": "nmfc",
+  "test_top1": 0.9750000238418579,
+  "silhouette": 0.4111751914024353,
+  "transition_epoch": 30,
+  "transition_reason": "max_warmup",
+  "epochs": 200,
+  "name": "syn_moons_nmfc"
+}

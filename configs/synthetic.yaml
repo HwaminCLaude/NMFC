@@ -1,0 +1,26 @@
+# 합성 매니폴드 3종 (moons / circles / swiss roll) + APT 절제 실험
+base: base.yaml
+runner: synthetic
+
+defaults:
+  n_samples: 2000
+  epochs: 200
+  hidden: [64, 64]
+  embed_dim: 2      # m=2 — 임베딩 공간을 그대로 2D 시각화
+  batch_k: 64       # PK 배치에서 클래스당 샘플 수 (P = 전체 클래스 수)
+  nmfc: {n_ref: 256}  # 합성은 데이터가 작아 추론 뱅크를 넉넉히
+
+experiments:
+  # 선형 베이스라인 (은닉층 없음) — '직선 하나로는 못 가른다'는 실패 사례
+  - {name: syn_moons_linear,    dataset: moons,   method: softmax, hidden: []}
+  - {name: syn_circles_linear,  dataset: circles, method: softmax, hidden: []}
+  - {name: syn_swiss_linear,    dataset: swiss,   method: softmax, hidden: []}
+  - {name: syn_moons_softmax,   dataset: moons,   method: softmax}
+  - {name: syn_moons_nmfc,      dataset: moons,   method: nmfc}
+  - {name: syn_circles_softmax, dataset: circles, method: softmax}
+  - {name: syn_circles_nmfc,    dataset: circles, method: nmfc}
+  - {name: syn_swiss_softmax,   dataset: swiss,   method: softmax}
+  - {name: syn_swiss_nmfc,      dataset: swiss,   method: nmfc}
+  # APT 절제 (moons): 자동 전환 vs 고정 에폭 전환 vs 워밍업 없음
+  - {name: syn_moons_apt_fixed3,  dataset: moons, method: nmfc, apt_mode: fixed, fixed_epoch: 3}
+  - {name: syn_moons_apt_none,    dataset: moons, method: nmfc, apt_mode: none}

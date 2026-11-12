@@ -1,0 +1,11 @@
+{
+  "runner": "synthetic",
+  "dataset": "swiss",
+  "method": "nmfc",
+  "test_top1": 0.9866666793823242,
+  "silhouette": 0.7306069135665894,
+  "transition_epoch": 30,
+  "transition_reason": "max_warmup",
+  "epochs": 200,
+  "name": "syn_swiss_nmfc"
+}

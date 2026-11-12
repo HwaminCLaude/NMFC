@@ -1,0 +1,22 @@
+{
+  "runner": "ood",
+  "dataset": "cifar10",
+  "method": "nmfc",
+  "top1": 0.8618000149726868,
+  "top5": 0.9092000126838684,
+  "silhouette": 0.26993733644485474,
+  "transition_epoch": 20,
+  "epochs": 40,
+  "img_size": 224,
+  "variant": {
+    "energy": "softmin",
+    "logit": "hinge_temp",
+    "apt": "negJ",
+    "bank": "minibatch"
+  },
+  "variant_code": "shjb",
+  "ood_dataset": "svhn",
+  "ood_auc": 0.8182894111094037,
+  "ood_score": "E_total",
+  "name": "ood10v_shjb"
+}

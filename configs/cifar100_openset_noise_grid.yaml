@@ -1,0 +1,49 @@
+# 노이즈 그리드 웨이브 A — rate 곡선 (시드 42). clean·rate5 캐시는 재사용(여기 없음).
+base: base.yaml
+runner: openset
+
+defaults:
+  dataset: cifar100
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 48
+  batch_k: 4
+  batch_size: 192
+  num_workers: 4
+  eval_subset: 2000
+  optim: {lr: 3.0e-4}
+  apt: {delta: 1.0e-3, max_warmup: 5}
+  open_set: {n_seen: 80, split_seed: 0}
+
+experiments:
+  - {name: c100v_shrb_open_ns10, method: nmfc,
+     variant: {energy: softmin, logit: hinge_temp}, nmfc: {k1: 3, k2: 32},
+     label_noise: {rate: 0.10, seed: 0, scope: seen}}
+  - {name: c100v_softmax_open_ns10, method: softmax,
+     label_noise: {rate: 0.10, seed: 0, scope: seen}}
+  - {name: c100v_shrb_open_na10, method: nmfc,
+     variant: {energy: softmin, logit: hinge_temp}, nmfc: {k1: 3, k2: 32},
+     label_noise: {rate: 0.10, seed: 0, scope: all}}
+  - {name: c100v_softmax_open_na10, method: softmax,
+     label_noise: {rate: 0.10, seed: 0, scope: all}}
+  - {name: c100v_shrb_open_ns15, method: nmfc,
+     variant: {energy: softmin, logit: hinge_temp}, nmfc: {k1: 3, k2: 32},
+     label_noise: {rate: 0.15, seed: 0, scope: seen}}
+  - {name: c100v_softmax_open_ns15, method: softmax,
+     label_noise: {rate: 0.15, seed: 0, scope: seen}}
+  - {name: c100v_shrb_open_na15, method: nmfc,
+     variant: {energy: softmin, logit: hinge_temp}, nmfc: {k1: 3, k2: 32},
+     label_noise: {rate: 0.15, seed: 0, scope: all}}
+  - {name: c100v_softmax_open_na15, method: softmax,
+     label_noise: {rate: 0.15, seed: 0, scope: all}}
+  - {name: c100v_shrb_open_ns20, method: nmfc,
+     variant: {energy: softmin, logit: hinge_temp}, nmfc: {k1: 3, k2: 32},
+     label_noise: {rate: 0.20, seed: 0, scope: seen}}
+  - {name: c100v_softmax_open_ns20, method: softmax,
+     label_noise: {rate: 0.20, seed: 0, scope: seen}}
+  - {name: c100v_shrb_open_na20, method: nmfc,
+     variant: {energy: softmin, logit: hinge_temp}, nmfc: {k1: 3, k2: 32},
+     label_noise: {rate: 0.20, seed: 0, scope: all}}
+  - {name: c100v_softmax_open_na20, method: softmax,
+     label_noise: {rate: 0.20, seed: 0, scope: all}}

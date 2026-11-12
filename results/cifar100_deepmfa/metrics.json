@@ -1,0 +1,12 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "deepmfa",
+  "top1": 0.838100016117096,
+  "top5": 0.9692999720573425,
+  "silhouette": 0.213263601064682,
+  "transition_epoch": null,
+  "epochs": 40,
+  "img_size": 224,
+  "name": "cifar100_deepmfa"
+}

@@ -1,0 +1,15 @@
+{
+  "runner": "ood",
+  "dataset": "cifar10",
+  "method": "softmax",
+  "top1": 0.9753999710083008,
+  "top5": 0.9995999932289124,
+  "silhouette": 0.5451523661613464,
+  "transition_epoch": null,
+  "epochs": 40,
+  "img_size": 224,
+  "ood_dataset": "svhn",
+  "ood_auc": 0.977046923017824,
+  "ood_score": "1-MSP",
+  "name": "ood_cifar10_softmax_lr3_s2"
+}

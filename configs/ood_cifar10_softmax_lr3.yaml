@@ -1,0 +1,21 @@
+# OOD softmax 대조군의 lr 정렬판.
+# ood_cifar10_softmax(lr 1e-3)는 nmfc OOD 런(전부 lr 3e-4)과 lr이 어긋나 "E_total vs MSP"가
+# 판정불가였다. 제안법 레시피 lr 3e-4로 재학습해 그 축을 판정 가능하게 한다.
+base: base.yaml
+runner: ood
+
+defaults:
+  dataset: cifar10
+  ood_dataset: svhn
+  img_size: 224
+  epochs: 40
+  embed_dim: 128
+  batch_p: 10
+  batch_k: 19
+  batch_size: 192        # softmax는 PK 게이트로 shuffle192 (ood_cifar10_softmax와 동일 구성)
+  num_workers: 4
+  eval_subset: 2000
+  apt: {delta: 1.0e-3, max_warmup: 20}
+
+experiments:
+  - {name: ood_cifar10_softmax_lr3, method: softmax, optim: {lr: 3.0e-4}}  # 점수 = 1 - MSP

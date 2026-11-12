@@ -1,0 +1,31 @@
+# CIFAR-100 6모델 벤치마크 — ResNet-50 (ImageNet 사전학습, m=128)
+base: base.yaml
+runner: image
+
+defaults:
+  dataset: cifar100
+  img_size: 224      # 리허설 시 32로 변경 (사전학습 stem 그대로, 해상도만 낮춤)
+  epochs: 40
+  embed_dim: 128
+  batch_p: 32        # NMFC/Triplet용 PK 배치: P 클래스 × K 샘플 = 192
+  batch_k: 6         # (224px에서 배치 256은 16GB VRAM 초과 → sysmem fallback로 극단적 감속)
+  batch_size: 192    # CE 계열용 표준 배치
+  num_workers: 4
+  eval_subset: 2000  # 중간 에폭 간이 평가용 테스트 부분집합
+  # 5k 부분집합 프로브 + SGD 노이즈에서는 기본 δ=1e-4(base.yaml)의 상대변화 조건이 사실상 발동 불가
+  # (40에폭 중 30에폭을 워밍업에 소모). δ를 완화하고 하드캡을 당겨 Phase II 예산을 확보.
+  apt: {delta: 1.0e-3, max_warmup: 20}
+
+experiments:
+  - {name: cifar100_softmax, method: softmax}
+  - {name: cifar100_arcface, method: arcface, s: 30.0, margin: 0.2}
+  - {name: cifar100_triplet, method: triplet, margin: 0.3}
+  - {name: cifar100_proto,   method: proto}
+  - {name: cifar100_deepmfa, method: deepmfa, beta: 0.1}
+  # NMFC 전용 튜닝(5에폭 프로브로 선정, configs/diag224.yaml):
+  # 배치 내 클래스 수를 늘리고(48×4) lr 완화(3e-4) — 5에폭 top1 0.34→0.48
+  # max_warmup 5: 사전학습 백본에서는 Φ가 워밍업 내내 0.8~1.2를 배회(개선 없음,
+  # 상대변화율 1e-2~1e-1로 δ 발동 불가)하고 top1이 0.04에 정체 — 뼈대가 이미 있어
+  # 선형 워밍업이 예산만 소모함을 확인(1차 본실행 이력: 전환 20, 최종 0.462)
+  - {name: cifar100_nmfc,    method: nmfc, batch_p: 48, batch_k: 4, optim: {lr: 3.0e-4},
+     apt: {max_warmup: 5}}

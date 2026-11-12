@@ -1,0 +1,159 @@
+{
+ "config": {
+  "exp": "c100v_shrb",
+  "k1": 3,
+  "k2": 32,
+  "lam": 0.5,
+  "tau_min": 0.01,
+  "sigma2": 26.659608840942383,
+  "tau": 1.0434094667434692,
+  "hinge_m": -12.122461318969727,
+  "n_bank": 6400,
+  "d": 128
+ },
+ "R": {
+  "max_norm_test": 5.27539672342772,
+  "max_norm_bank": 5.755985082917608,
+  "R": 5.755985082917608,
+  "mean_norm_test": 3.540965786040679
+ },
+ "prop1_bounds": {
+  "max_upper_violation": -21.93804812736901,
+  "max_lower_violation": -0.0017889037962035559,
+  "band_width": 29.288573883744284,
+  "mean_gap_to_dmin2": 28.244503706785444
+ },
+ "prototype_reduction_maxerr": 3.552713678800501e-15,
+ "linear_equiv_max_class_spread": 1.0658141036401503e-14,
+ "sigma_limits": {
+  "rel_err_sigma0": 9.954778074134144e-07,
+  "rel_err_sigma_inf": 3.4758982978320313e-06,
+  "sigma0_convergence": [
+   {
+    "factor": 0.01,
+    "maxerr": 0.29110044816440706,
+    "band": 0.29288573883744284
+   },
+   {
+    "factor": 0.0001,
+    "maxerr": 0.0018477300499206706,
+    "band": 0.002928857388374429
+   },
+   {
+    "factor": 1e-06,
+    "maxerr": 1.83063694834118e-05,
+    "band": 2.9288573883744282e-05
+   }
+  ]
+ },
+ "invariance_maxerr": {
+  "평행이동": 2.5490720645393594e-13,
+  "직교변환": 2.842170943040401e-14
+ },
+ "scale": {
+  "c": 2.0,
+  "homogeneity_maxerr": 0.0,
+  "frozen_sigma_ratio": -4.890130391947879,
+  "hinge_clamp_rate_before": 0.0,
+  "hinge_clamp_rate_after": 0.0
+ },
+ "lipschitz": {
+  "measured_max_grad_norm": 10.258136663705322,
+  "bound_with_tau": 33.099096374210475,
+  "bound_with_tau_min": 3453.5910497505647,
+  "R": 5.755985082917608,
+  "tau": 1.0434094667434692
+ },
+ "margin": {
+  "identity_maxerr": 1.4210854715202004e-14,
+  "max_rival_advantage": 14.21217800450485,
+  "rival_advantage_bound": 80.27270219568129,
+  "hinge_m": -12.122461318969727,
+  "e_neg_lower_bound": -92.39516351465102,
+  "e_neg_min": -89.39690348611319
+ },
+ "checks": [
+  {
+   "name": "P1 상한 E⁺ ≤ d_min²",
+   "passed": true,
+   "detail": "max(E⁺−d_min²)=-2.194e+01"
+  },
+  {
+   "name": "P1 하한 d_min²−σ²ln k₁ ≤ E⁺",
+   "passed": true,
+   "detail": "max(하한−E⁺)=-1.789e-03"
+  },
+  {
+   "name": "P1 단조성(이웃 고정·거리 ↑ → E⁺ ↑)",
+   "passed": true,
+   "detail": "min(ΔE⁺)=1.802e-01"
+  },
+  {
+   "name": "프로토타입 특수화(k₁=1 ⇒ E⁺=‖z−p‖²)",
+   "passed": true,
+   "detail": "max|Δ|=3.553e-15"
+  },
+  {
+   "name": "선형 소프트맥스 등가(k₁=1·λ=0, 클래스 무관 상수차)",
+   "passed": true,
+   "detail": "클래스간 잔차 max=1.066e-14"
+  },
+  {
+   "name": "σ→0 극한 → 최근접 제곱거리",
+   "passed": true,
+   "detail": "σ²×1e-6에서 max|E⁺−d_min²|=1.831e-05 (밴드 2.929e-05)"
+  },
+  {
+   "name": "σ→∞ 극한 → 이웃 평균 제곱거리(+클래스 공통 상수)",
+   "passed": true,
+   "detail": "max 상대오차=3.476e-06"
+  },
+  {
+   "name": "평행이동 불변",
+   "passed": true,
+   "detail": "max|ΔE|=2.549e-13"
+  },
+  {
+   "name": "직교변환 불변",
+   "passed": true,
+   "detail": "max|ΔE|=2.842e-14"
+  },
+  {
+   "name": "스케일 동차성(σ² 동반 시 E → c²E)",
+   "passed": true,
+   "detail": "max|Δ|=0.000e+00"
+  },
+  {
+   "name": "등방 스케일 비불변(σ²·m 동결 시 c² 배율 아님)",
+   "passed": true,
+   "detail": "E⁺ 배율 중앙값=-4.890 ≠ c²=4.0, 힌지 클램프율 0.000→0.000"
+  },
+  {
+   "name": "립시츠 상한(실측 경사노름 ≤ 4R(1+λ)/τ)",
+   "passed": true,
+   "detail": "실측 max‖∇g‖=10.26 ≤ 상한 33.10"
+  },
+  {
+   "name": "마진 분해 항등식",
+   "passed": true,
+   "detail": "max|Δ|=1.421e-14"
+  },
+  {
+   "name": "음의 에너지 하한 E⁻ ≥ −σ²ln k₂",
+   "passed": true,
+   "detail": "min E⁻=-89.397 ≥ -92.395"
+  },
+  {
+   "name": "분리 이득 유계 (≤ m + σ²ln k₂)",
+   "passed": true,
+   "detail": "max=14.212 ≤ 상한 80.273"
+  },
+  {
+   "name": "로짓 상한 g_k ≤ (−E⁺_k+λm)/τ",
+   "passed": true,
+   "detail": "max(g−상한)=-2.898e+01"
+  }
+ ],
+ "n_passed": 16,
+ "n_total": 16
+}

@@ -1,0 +1,30 @@
+# NMFC 재현 저장소 의존성
+#
+# torch/torchvision은 여기 넣지 않는다 — 설치 인덱스가 환경마다 다르기 때문이다.
+#   CPU만 (재학습 없이 검증·집계 재계산):
+#       pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#   CUDA 12.8 (전체 재학습):
+#       pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#   CUDA 버전이 다르면 cu128을 환경에 맞게 바꾼다.
+#
+# 실측 검증 환경 (이 조합으로 단위 테스트 97건·명제 검증 16건 통과 확인):
+#   Python 3.14.6 / torch 2.11.0+cu128 / torchvision 0.26.0+cu128
+#   numpy 2.4.4 / pandas 3.0.3 / matplotlib 3.11.0 / scikit-learn 1.9.0
+#   tqdm 4.68.4 / pyyaml 6.0.3 / pytest 9.1.1 / ruff 0.15.21
+# 정확한 재현이 필요하면 requirements-lock.txt 를 쓴다.
+
+# --- 코드 실행에 필요 ---
+numpy>=2.0
+pyyaml>=6.0
+scikit-learn>=1.5          # KMeans·실루엣 등 (src/evaluate.py, scripts/eval_*.py)
+matplotlib>=3.9            # 그림 생성
+tqdm>=4.66                 # 학습 진행 표시
+
+# --- 집계·표 출력 ---
+pandas>=2.2                # scripts/eval_*.py 의 표 렌더링
+
+# --- 검증 ---
+pytest>=8.0                # 단위 테스트 97건
+
+# --- 개발(선택) ---
+ruff>=0.6                  # 린트, 줄길이 110

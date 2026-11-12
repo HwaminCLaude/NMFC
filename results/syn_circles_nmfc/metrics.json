@@ -1,0 +1,11 @@
+{
+  "runner": "synthetic",
+  "dataset": "circles",
+  "method": "nmfc",
+  "test_top1": 1.0,
+  "silhouette": 0.7919795513153076,
+  "transition_epoch": 30,
+  "transition_reason": "max_warmup",
+  "epochs": 200,
+  "name": "syn_circles_nmfc"
+}

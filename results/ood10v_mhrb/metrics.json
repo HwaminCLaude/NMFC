@@ -1,0 +1,22 @@
+{
+  "runner": "ood",
+  "dataset": "cifar10",
+  "method": "nmfc",
+  "top1": 0.958899974822998,
+  "top5": 0.9991000294685364,
+  "silhouette": 0.441313236951828,
+  "transition_epoch": 20,
+  "epochs": 40,
+  "img_size": 224,
+  "variant": {
+    "energy": "mean",
+    "logit": "hinge_temp",
+    "apt": "reciprocal",
+    "bank": "minibatch"
+  },
+  "variant_code": "mhrb",
+  "ood_dataset": "svhn",
+  "ood_auc": 0.9370219998463429,
+  "ood_score": "E_total",
+  "name": "ood10v_mhrb"
+}

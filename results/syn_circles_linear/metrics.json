@@ -1,0 +1,11 @@
+{
+  "runner": "synthetic",
+  "dataset": "circles",
+  "method": "softmax",
+  "test_top1": 0.48000001907348633,
+  "silhouette": 0.09709665924310684,
+  "transition_epoch": null,
+  "transition_reason": null,
+  "epochs": 200,
+  "name": "syn_circles_linear"
+}

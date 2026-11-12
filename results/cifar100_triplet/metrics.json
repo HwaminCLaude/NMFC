@@ -1,0 +1,12 @@
+{
+  "runner": "image",
+  "dataset": "cifar100",
+  "method": "triplet",
+  "top1": 0.1256999969482422,
+  "top5": 0.34150001406669617,
+  "silhouette": -0.06276728212833405,
+  "transition_epoch": null,
+  "epochs": 40,
+  "img_size": 224,
+  "name": "cifar100_triplet"
+}

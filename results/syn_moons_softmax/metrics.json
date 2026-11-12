@@ -1,0 +1,11 @@
+{
+  "runner": "synthetic",
+  "dataset": "moons",
+  "method": "softmax",
+  "test_top1": 1.0,
+  "silhouette": 0.8610720038414001,
+  "transition_epoch": null,
+  "transition_reason": null,
+  "epochs": 200,
+  "name": "syn_moons_softmax"
+}

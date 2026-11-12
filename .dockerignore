@@ -1,0 +1,40 @@
+# NMFC Docker 빌드 컨텍스트 제외 목록
+#
+# 정상 빌드 경로는 docker/build.ps1(Windows)·docker/build.sh(Linux·CI) 하나뿐이다.
+# 이 스크립트는 git 인덱스에서 내보낸 깨끗한 트리(ASCII 경로)를 컨텍스트로 쓰므로
+# 이 파일은 클론에서 직접 `docker build .`를 할 때를 위한 보조 장치다.
+# 그 경우 이미지는 약한 모드(라벨 nmfc.manifest.source=in-build)로 만들어진다.
+#
+# 주의: 추적 파일(인덱스에 있는 파일)을 여기서 빼면 안 된다. 빌드 중
+# `nmfc manifest --verify docker/context.lock --strict`가 그 파일을 missing으로 보고 빌드를 멈춘다.
+# Dockerfile과 .dockerignore 자신도 매니페스트에 들어가므로 여기에 넣지 않는다.
+
+# --- 이미지에 넣지 않는 폴더·캐시 ---
+.git
+data/
+checkpoints/
+runs/
+out/
+dist/
+_planning/
+.venv/
+# compose fetch의 기본 바인드 원본(./host-data). 데이터는 이미지에 굽지 않는다.
+host-data/
+**/__pycache__
+.pytest_cache
+results/ext_*/embeddings.npz
+**/*.out
+**/*.log
+
+# --- .gitignore 반영(클론 빌드와 인덱스 빌드의 내용 차이를 줄인다) ---
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+results/ext_*/*
+!results/ext_resnet50_frozen/metrics.json
+
+# --- 추적 파일 보호: docker/ 아래(재현 도구·시험 픽스처)는 위의 확장자 패턴(*.log, *.out 등)과 상관없이 남긴다.
+#     뒤에 오는 패턴이 이기므로 바이트코드 캐시만 다시 뺀다.
+!docker/**
+**/__pycache__
+**/*.pyc

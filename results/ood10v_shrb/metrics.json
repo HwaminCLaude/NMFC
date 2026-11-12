@@ -1,0 +1,22 @@
+{
+  "runner": "ood",
+  "dataset": "cifar10",
+  "method": "nmfc",
+  "top1": 0.9580000042915344,
+  "top5": 0.9993000030517578,
+  "silhouette": 0.4632318913936615,
+  "transition_epoch": 20,
+  "epochs": 40,
+  "img_size": 224,
+  "variant": {
+    "energy": "softmin",
+    "logit": "hinge_temp",
+    "apt": "reciprocal",
+    "bank": "minibatch"
+  },
+  "variant_code": "shrb",
+  "ood_dataset": "svhn",
+  "ood_auc": 0.9699065630762139,
+  "ood_score": "E_total",
+  "name": "ood10v_shrb"
+}
