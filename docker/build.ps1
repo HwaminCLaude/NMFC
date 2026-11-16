@@ -25,7 +25,7 @@
 .PARAMETER Target
     cpu or gpu.
 .PARAMETER Python
-    Interpreter used for step 2. It needs pyyaml and numpy (nmfc_* modules import them at top level).
+    Interpreter used for step 2. The manifest step uses only the Python standard library.
     Default: 'python'.
 .PARAMETER Docker
     docker executable. Default: 'docker'.

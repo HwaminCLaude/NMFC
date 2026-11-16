@@ -15,6 +15,7 @@ authors:
     affiliation: "Department of Data Science, Graduate School, Hoseo University"
     email: "adan_25@naver.com"
 license: MIT
+repository-code: "https://github.com/HwaminCLaude/NMFC"
 keywords:
   - discriminative embedding
   - marginal Fisher analysis

@@ -12,7 +12,7 @@
 #             --build-arg NMFC_MANIFEST_SOURCE=host-export --build-arg NMFC_REVISION=<리비전> -t nmfc:<t> <ctx>
 #   5) 기록:  docker image inspect → out/build_<t>.json (Id, RootFS.Layers, Size, Labels 등)
 #   --skip-build는 1~3만 한다(데몬 불필요, 시험용).
-# 환경변수: PYTHON(기본 python3. pyyaml·numpy 필요), DOCKER(기본 docker), NMFC_CTX(내보낼 ASCII 경로)
+# 환경변수: PYTHON(기본 python3, 표준 라이브러리만 사용), DOCKER(기본 docker), NMFC_CTX(내보낼 ASCII 경로)
 set -euo pipefail
 IFS=$'\n\t'
 
